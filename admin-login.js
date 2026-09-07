@@ -1,3 +1,5 @@
+const API_BASE_URL = "https://itachi-mart.onrender.com";
+
 const form = document.getElementById("loginForm");
 const username = document.getElementById("username");
 const password = document.getElementById("password");
@@ -18,7 +20,7 @@ form.addEventListener("submit", async (event) => {
   button.textContent = "AUTHENTICATING...";
 
   try {
-    const response = await fetch("/api/admin/login", {
+    const response = await fetch(`${API_BASE_URL}/api/admin/login`, {
       method: "POST",
       headers: {"Content-Type": "application/json"},
       body: JSON.stringify({

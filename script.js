@@ -2,8 +2,10 @@
 // ITACHI MART - CUSTOMER JAVASCRIPT
 // ==========================================
 
-const PRODUCT_API = "/api/products";
-const ORDER_API = "/api/orders";
+const API_BASE_URL = "https://itachi-mart.onrender.com";
+
+const PRODUCT_API = `${API_BASE_URL}/api/products`;
+const ORDER_API = `${API_BASE_URL}/api/orders`;
 
 let products = [];
 let cart = [];
