@@ -1,0 +1,8 @@
+ITACHI MART - NEXT STEPS
+
+1. This ZIP fixes the accidental ```html / ```css / ```javascript code fences that were displayed by the browser.
+2. Push these files to GitHub.
+3. Deploy server.js as a Render Web Service using: npm install / node server.js.
+4. Add MONGODB_URI in Render Environment Variables. Do not upload .env.
+5. After Render gives the API URL, replace the API base in script.js and admin.js/admin-login.js with that URL.
+6. Redeploy Vercel.

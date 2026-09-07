@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Itachi Mart | Admin Login</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&family=Orbitron:wght@600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="admin-login.css">
+</head>
+<body>
+<div class="grid"></div>
+<div class="glow glow-one"></div>
+<div class="glow glow-two"></div>
+
+<main class="login-page">
+  <section class="login-card">
+    <div class="brand-mark">IM</div>
+    <p class="eyebrow">ITACHI MART / CONTROL CENTER</p>
+    <h1>Admin <span>Login</span></h1>
+    <p class="subtitle">Sign in to manage your store.</p>
+
+    <form id="loginForm">
+      <label for="username">Username</label>
+      <input id="username" name="username" type="text" autocomplete="username" placeholder="Admin username" required>
+
+      <label for="password">Password</label>
+      <div class="password-wrap">
+        <input id="password" name="password" type="password" autocomplete="current-password" placeholder="Admin password" required>
+        <button id="togglePassword" type="button" aria-label="Show password">Show</button>
+      </div>
+
+      <button id="loginButton" class="login-button" type="submit">ACCESS DASHBOARD →</button>
+      <p id="loginMessage" class="message" role="alert"></p>
+    </form>
+
+    <a class="back-store" href="index.html">← Back to Store</a>
+  </section>
+</main>
+
+<script src="admin-login.js"></script>
+</body>
+</html>

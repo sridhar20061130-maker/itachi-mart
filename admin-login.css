@@ -1,0 +1,24 @@
+*{box-sizing:border-box;margin:0;padding:0}
+body{min-height:100vh;overflow:hidden;font-family:Inter,sans-serif;color:#fff;background:#050713;display:grid;place-items:center}
+.grid{position:fixed;inset:0;opacity:.22;background-image:linear-gradient(rgba(255,255,255,.045) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.045) 1px,transparent 1px);background-size:44px 44px;mask-image:linear-gradient(to bottom,#000,transparent)}
+.glow{position:fixed;width:360px;height:360px;border-radius:50%;filter:blur(100px);pointer-events:none}
+.glow-one{left:5%;top:10%;background:rgba(120,60,255,.2)}
+.glow-two{right:5%;bottom:5%;background:rgba(0,220,255,.13)}
+.login-page{width:min(92%,460px);position:relative}
+.login-card{padding:42px;border:1px solid rgba(0,234,255,.18);border-radius:24px;background:rgba(8,12,25,.84);backdrop-filter:blur(20px);box-shadow:0 0 50px rgba(0,234,255,.08),0 25px 80px rgba(0,0,0,.35);animation:rise .7s ease both}
+.brand-mark{width:58px;height:58px;display:grid;place-items:center;border-radius:16px;font:800 18px Orbitron,sans-serif;background:linear-gradient(135deg,#7c3cff,#00eaff);box-shadow:0 0 28px rgba(0,234,255,.25);margin-bottom:24px}
+.eyebrow{font:700 11px Orbitron,sans-serif;letter-spacing:2px;color:#00eaff}
+h1{font:800 38px Orbitron,sans-serif;margin:10px 0}h1 span{color:#00eaff}
+.subtitle{color:rgba(255,255,255,.6);margin-bottom:28px}
+label{display:block;font-size:13px;font-weight:700;margin:18px 0 8px}
+input{width:100%;padding:14px 15px;border:1px solid rgba(255,255,255,.12);border-radius:12px;outline:0;background:rgba(255,255,255,.045);color:#fff}
+input:focus{border-color:#00eaff;box-shadow:0 0 0 3px rgba(0,234,255,.08)}
+.password-wrap{position:relative}.password-wrap input{padding-right:72px}.password-wrap button{position:absolute;right:8px;top:7px;padding:7px 9px;border:0;border-radius:8px;background:rgba(0,234,255,.1);color:#00eaff;cursor:pointer}
+.login-button{width:100%;margin-top:24px;padding:15px;border:0;border-radius:12px;font-weight:800;color:#fff;background:linear-gradient(90deg,#673cff,#00cfe8);cursor:pointer;box-shadow:0 10px 30px rgba(0,190,255,.14);transition:.25s}
+.login-button:hover{transform:translateY(-2px);box-shadow:0 14px 35px rgba(0,190,255,.22)}
+.login-button:disabled{opacity:.6;cursor:wait;transform:none}
+.message{min-height:22px;margin-top:14px;color:#ff7d9a;font-size:13px;text-align:center}
+.back-store{display:block;margin-top:24px;text-align:center;color:rgba(255,255,255,.6);text-decoration:none;font-size:13px}.back-store:hover{color:#00eaff}
+@keyframes rise{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:none}}
+@media(max-width:520px){.login-card{padding:30px 22px}h1{font-size:30px}}
+@media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}

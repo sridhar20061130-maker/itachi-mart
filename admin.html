@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Itachi Mart | Admin Dashboard</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Orbitron:wght@500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="admin.css">
+</head>
+<body>
+<div class="ambient ambient-one"></div><div class="ambient ambient-two"></div><div class="grid-bg"></div>
+<div class="particles" aria-hidden="true"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></div>
+
+<header class="admin-header">
+  <div class="brand"><div class="brand-mark">IM</div><div><h1>ITACHI MART</h1><p>CONTROL CENTER</p></div></div>
+  <div class="header-actions"><span class="live-status"><i></i> SYSTEM ONLINE</span><a href="index.html" class="back-store">← Store</a></div>
+</header>
+
+<div class="admin-layout">
+<aside class="sidebar">
+  <div class="side-label">NAVIGATION</div>
+  <a href="#dashboard" class="side-link active">⌂ <span>Dashboard</span></a>
+  <a href="#products" class="side-link">▣ <span>Products</span></a>
+  <a href="#add-product" class="side-link">＋ <span>Add Product</span></a>
+  <a href="#orders" class="side-link">◫ <span>Orders</span></a>
+  <a href="#analytics" class="side-link">◈ <span>Analytics</span></a>
+</aside>
+
+<main class="admin-main">
+<section id="dashboard" class="hero-admin reveal">
+  <div><p class="eyebrow">ITACHI MART / ADMIN</p><h2>Command your <span>store.</span></h2>
+  <p class="hero-copy">Manage products, monitor orders and visualize your sales performance from one futuristic control center.</p></div>
+  <div class="hero-orb"><div class="orb-ring ring-a"></div><div class="orb-ring ring-b"></div><div class="orb-core">IM</div></div>
+</section>
+
+<section class="stats-grid reveal">
+  <article class="stat-card"><div class="stat-icon">▣</div><div><p>Total Products</p><h3 id="totalProducts">0</h3></div></article>
+  <article class="stat-card"><div class="stat-icon">◫</div><div><p>Total Orders</p><h3 id="totalOrders">0</h3></div></article>
+  <article class="stat-card"><div class="stat-icon">◌</div><div><p>Pending Orders</p><h3 id="pendingOrders">0</h3></div></article>
+  <article class="stat-card revenue-card"><div class="stat-icon">₹</div><div><p>Total Revenue</p><h3 id="totalRevenue">₹0</h3></div></article>
+</section>
+
+<section id="analytics" class="panel analytics-panel reveal">
+<div class="section-heading"><div><p class="eyebrow">PERFORMANCE ENGINE</p><h2>Sales Analytics</h2></div><button class="ghost-btn" id="refreshAnalytics">↻ Refresh</button></div>
+<div class="analytics-grid">
+  <div class="chart-card chart-wide"><div class="chart-title"><div><h3>Revenue — Last 7 Days</h3><p>Recorded order revenue</p></div><strong id="sevenDayRevenue">₹0</strong></div><div class="bar-chart" id="revenueChart"></div></div>
+  <div class="chart-card"><div class="chart-title"><div><h3>Order Status</h3><p>Current distribution</p></div></div><div class="status-chart" id="statusChart"></div></div>
+  <div class="chart-card"><div class="chart-title"><div><h3>Top Products</h3><p>Based on ordered quantities</p></div></div><div class="top-products" id="topProducts"></div></div>
+</div>
+</section>
+
+<section id="add-product" class="panel reveal">
+<div class="section-heading"><div><p class="eyebrow">CATALOG SYSTEM</p><h2>Add Product</h2></div></div>
+<form id="productForm" class="product-form">
+  <div class="field"><label for="productName">Product Name</label><input id="productName" type="text" placeholder="e.g. Wireless Headphones" required></div>
+  <div class="field"><label for="productCategory">Category</label><select id="productCategory" required><option value="">Select category</option><option>Electronics</option><option>Fashion</option><option>Accessories</option><option>Gaming</option><option>Home</option><option>Other</option></select></div>
+  <div class="field"><label for="productPrice">Price (₹)</label><input id="productPrice" type="number" min="0" step="0.01" placeholder="999" required></div>
+  <div class="field"><label for="productStock">Stock</label><input id="productStock" type="number" min="0" step="1" placeholder="25" required></div>
+  <div class="field field-wide"><label for="productImage">Image URL</label><input id="productImage" type="url" placeholder="https://example.com/product.jpg" required><div id="imagePreview" class="image-preview">IMAGE PREVIEW</div></div>
+  <div class="field field-wide"><label for="productDescription">Description</label><textarea id="productDescription" rows="4" placeholder="Write a clear product description..." required></textarea></div>
+  <div class="form-actions"><button class="primary-btn" id="addProductButton" type="submit">＋ Add Product</button><button class="secondary-btn" id="cancelEdit" type="button" hidden>Cancel Edit</button></div>
+  <p id="successMessage" class="message success-message"></p><p id="errorMessage" class="message error-message"></p>
+</form>
+</section>
+
+<section id="products" class="panel reveal">
+<div class="section-heading"><div><p class="eyebrow">INVENTORY MATRIX</p><h2>Product Management</h2></div><span class="product-count" id="productCount">0 products</span></div>
+<div class="toolbar"><input id="productSearch" type="search" placeholder="Search products..."><select id="productFilter"><option value="all">All Categories</option><option>Electronics</option><option>Fashion</option><option>Accessories</option><option>Gaming</option><option>Home</option><option>Other</option></select><select id="productSort"><option value="newest">Newest</option><option value="name">Name A–Z</option><option value="priceLow">Price Low–High</option><option value="priceHigh">Price High–Low</option><option value="stockLow">Stock Low–High</option></select></div>
+<div id="productsLoading" class="loading-state">Loading products...</div><div id="productsEmpty" class="empty-state" hidden>No products found.</div>
+<div class="table-wrap"><table><thead><tr><th>Product</th><th>Category</th><th>Price</th><th>Stock</th><th>Actions</th></tr></thead><tbody id="productsTableBody"></tbody></table></div>
+</section>
+
+<section id="orders" class="panel reveal">
+<div class="section-heading"><div><p class="eyebrow">ORDER NETWORK</p><h2>Order Management</h2></div></div>
+<div class="toolbar"><input id="orderSearch" type="search" placeholder="Search by customer or email..."><select id="orderStatusFilter"><option value="all">All Statuses</option><option>Pending</option><option>Processing</option><option>Shipped</option><option>Delivered</option><option>Cancelled</option></select></div>
+<div id="ordersLoading" class="loading-state">Loading orders...</div><div id="ordersEmpty" class="empty-state" hidden>No orders found.</div><div id="ordersGrid" class="orders-grid"></div>
+</section>
+
+<footer class="admin-footer">ITACHI MART • ADMIN CONTROL CENTER • <span id="currentYear"></span></footer>
+</main></div>
+<div id="adminToast" class="admin-toast"><span id="toastMessage"></span></div>
+<script src="admin.js"></script>
+</body></html>

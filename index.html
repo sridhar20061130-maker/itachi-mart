@@ -1,0 +1,451 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Itachi Mart | Future Shopping</title>
+
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+    <!-- BACKGROUND -->
+    <div class="background-grid"></div>
+
+    <div class="ambient ambient-one"></div>
+    <div class="ambient ambient-two"></div>
+
+
+    <!-- HEADER -->
+
+    <header class="store-header">
+
+        <a href="#" class="logo">
+            ITACHI <span>MART</span>
+        </a>
+
+
+        <nav>
+
+            <a href="#home">Home</a>
+
+            <a href="#products">Products</a>
+
+            <a href="#about">About</a>
+
+            <a href="#contact">Contact</a>
+
+        </nav>
+
+
+        <button
+            id="cartButton"
+            class="cart-button"
+        >
+
+            🛒 Cart
+
+            <span id="cartCount">
+                0
+            </span>
+
+        </button>
+
+    </header>
+
+
+
+    <!-- HERO -->
+
+    <section
+        id="home"
+        class="hero"
+    >
+
+        <div class="hero-content">
+
+            <span class="hero-badge">
+                ✦ NEXT GENERATION SHOPPING
+            </span>
+
+
+            <h1>
+                SHOP THE
+                <span>FUTURE.</span>
+            </h1>
+
+
+            <p>
+                Discover premium products with
+                a futuristic shopping experience.
+            </p>
+
+
+            <a
+                href="#products"
+                class="hero-button"
+            >
+                Explore Products →
+            </a>
+
+        </div>
+
+
+        <div class="hero-visual">
+
+            <div class="hero-ring ring-one"></div>
+
+            <div class="hero-ring ring-two"></div>
+
+            <div class="hero-core">
+                IM
+            </div>
+
+        </div>
+
+    </section>
+
+
+
+    <!-- PRODUCTS -->
+
+    <section
+        id="products"
+        class="products-section"
+    >
+
+        <div class="section-heading">
+
+            <span>
+                OUR COLLECTION
+            </span>
+
+            <h2>
+                Featured Products
+            </h2>
+
+            <p>
+                Find exactly what you're looking for.
+            </p>
+
+        </div>
+
+
+
+        <!-- CONTROLS -->
+
+        <div class="store-controls">
+
+            <input
+                type="text"
+                id="searchInput"
+                placeholder="🔎 Search products..."
+            >
+
+
+            <select id="categoryFilter">
+
+                <option value="all">
+                    All Categories
+                </option>
+
+            </select>
+
+
+            <select id="sortFilter">
+
+                <option value="default">
+                    Sort By
+                </option>
+
+                <option value="price-low">
+                    Price: Low → High
+                </option>
+
+                <option value="price-high">
+                    Price: High → Low
+                </option>
+
+                <option value="name">
+                    Name: A → Z
+                </option>
+
+                <option value="stock">
+                    Stock Available
+                </option>
+
+            </select>
+
+
+            <button
+                id="resetFilters"
+                class="reset-button"
+            >
+                Reset
+            </button>
+
+        </div>
+
+
+
+        <!-- LOADING -->
+
+        <div
+            id="loading"
+            class="loading"
+        >
+            Loading products...
+        </div>
+
+
+        <!-- ERROR -->
+
+        <div
+            id="errorMessage"
+            class="store-error"
+        ></div>
+
+
+        <!-- PRODUCTS GRID -->
+
+        <div
+            id="productsGrid"
+            class="products-grid"
+        ></div>
+
+
+        <!-- EMPTY -->
+
+        <div
+            id="emptyProducts"
+            class="empty-products"
+        >
+            No products found.
+        </div>
+
+    </section>
+
+
+
+    <!-- ABOUT -->
+
+    <section
+        id="about"
+        class="about-section"
+    >
+
+        <span>
+            ABOUT ITACHI MART
+        </span>
+
+        <h2>
+            Shopping Beyond Limits
+        </h2>
+
+        <p>
+            Itachi Mart combines modern technology,
+            simple shopping and a futuristic interface
+            to create a better online store experience.
+        </p>
+
+    </section>
+
+
+
+    <!-- CONTACT -->
+
+    <section
+        id="contact"
+        class="contact-section"
+    >
+
+        <span>
+            CONTACT
+        </span>
+
+        <h2>
+            We're Here To Help
+        </h2>
+
+        <p>
+            Have a question about an order or product?
+            Contact our support team.
+        </p>
+
+    </section>
+
+
+
+    <!-- PRODUCT DETAILS MODAL -->
+
+    <div
+        id="productModal"
+        class="modal"
+    >
+
+        <div class="modal-content product-detail">
+
+            <button
+                class="modal-close"
+                id="productModalClose"
+            >
+                ×
+            </button>
+
+
+            <div id="productDetails"></div>
+
+        </div>
+
+    </div>
+
+
+
+    <!-- CART MODAL -->
+
+    <div
+        id="cartModal"
+        class="modal"
+    >
+
+        <div class="modal-content cart-modal-content">
+
+            <button
+                class="modal-close"
+                id="cartClose"
+            >
+                ×
+            </button>
+
+
+            <h2>
+                Your Cart
+            </h2>
+
+
+            <div
+                id="cartItems"
+                class="cart-items"
+            ></div>
+
+
+            <div class="cart-summary">
+
+                <span>
+                    Total
+                </span>
+
+                <strong id="cartTotal">
+                    ₹0
+                </strong>
+
+            </div>
+
+
+            <button
+                id="checkoutButton"
+                class="checkout-button"
+            >
+                Checkout
+            </button>
+
+        </div>
+
+    </div>
+
+
+
+    <!-- CHECKOUT MODAL -->
+
+    <div
+        id="checkoutModal"
+        class="modal"
+    >
+
+        <div class="modal-content checkout-content">
+
+            <button
+                class="modal-close"
+                id="checkoutClose"
+            >
+                ×
+            </button>
+
+
+            <h2>
+                Checkout
+            </h2>
+
+
+            <form id="checkoutForm">
+
+                <input
+                    type="text"
+                    id="customerName"
+                    placeholder="Your Name"
+                    required
+                >
+
+
+                <input
+                    type="email"
+                    id="customerEmail"
+                    placeholder="Email Address"
+                    required
+                >
+
+
+                <button
+                    type="submit"
+                    class="checkout-button"
+                >
+                    Place Order
+                </button>
+
+            </form>
+
+
+            <div
+                id="checkoutMessage"
+                class="checkout-message"
+            ></div>
+
+        </div>
+
+    </div>
+
+
+
+    <!-- TOAST -->
+
+    <div
+        id="toast"
+        class="toast"
+    ></div>
+
+
+
+    <!-- FOOTER -->
+
+    <footer>
+
+        <div class="footer-logo">
+            ITACHI MART
+        </div>
+
+        <p>
+            © 2026 Itachi Mart. All rights reserved.
+        </p>
+
+    </footer>
+
+
+
+    <script src="script.js"></script>
+
+</body>
+
+</html>
