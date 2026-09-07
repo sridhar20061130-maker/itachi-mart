@@ -9,13 +9,15 @@ const Order = require("./models/order");
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// ==============================
+// ==========================================
 // MIDDLEWARE
-// ==============================
+// ==========================================
 
 app.use(cors());
 app.use(express.json());
-app.use(express.static(__dirname));
+
+// Serve frontend files from /frontend
+app.use(express.static(__dirname + "/frontend"));
 
 console.log("=================================");
 console.log("       ITACHI MART SERVER");
@@ -26,9 +28,19 @@ console.log(
   process.env.MONGODB_URI ? "true" : "false"
 );
 
-// ==============================
+console.log(
+  "Admin username loaded:",
+  process.env.ADMIN_USERNAME ? "true" : "false"
+);
+
+console.log(
+  "Admin password loaded:",
+  process.env.ADMIN_PASSWORD ? "true" : "false"
+);
+
+// ==========================================
 // MONGODB CONNECTION
-// ==============================
+// ==========================================
 
 mongoose
   .connect(process.env.MONGODB_URI)
@@ -40,17 +52,17 @@ mongoose
     console.error(error.message);
   });
 
-// ==============================
+// ==========================================
 // HOME
-// ==============================
+// ==========================================
 
 app.get("/", (req, res) => {
-  res.sendFile(__dirname + "/index.html");
+  res.sendFile(__dirname + "/frontend/index.html");
 });
 
-// =====================================================
+// ==========================================
 // PRODUCT APIs
-// =====================================================
+// ==========================================
 
 // GET ALL PRODUCTS
 app.get("/api/products", async (req, res) => {
@@ -74,11 +86,9 @@ app.get("/api/products", async (req, res) => {
   }
 });
 
-
 // ADD PRODUCT
 app.post("/api/products", async (req, res) => {
   try {
-
     const {
       name,
       description,
@@ -120,7 +130,6 @@ app.post("/api/products", async (req, res) => {
     });
 
   } catch (error) {
-
     console.error("Add product error:", error);
 
     res.status(500).json({
@@ -130,11 +139,9 @@ app.post("/api/products", async (req, res) => {
   }
 });
 
-
 // UPDATE PRODUCT
 app.put("/api/products/:id", async (req, res) => {
   try {
-
     const {
       name,
       description,
@@ -158,30 +165,27 @@ app.put("/api/products/:id", async (req, res) => {
       });
     }
 
-    const updatedProduct =
-      await Product.findByIdAndUpdate(
-        req.params.id,
-        {
-          name: name,
-          description: description,
-          price: Number(price),
-          category: category,
-          image: image,
-          stock: Number(stock)
-        },
-        {
-          new: true,
-          runValidators: true
-        }
-      );
+    const updatedProduct = await Product.findByIdAndUpdate(
+      req.params.id,
+      {
+        name: name,
+        description: description,
+        price: Number(price),
+        category: category,
+        image: image,
+        stock: Number(stock)
+      },
+      {
+        new: true,
+        runValidators: true
+      }
+    );
 
     if (!updatedProduct) {
-
       return res.status(404).json({
         success: false,
         message: "Product not found"
       });
-
     }
 
     res.json({
@@ -191,7 +195,6 @@ app.put("/api/products/:id", async (req, res) => {
     });
 
   } catch (error) {
-
     console.error("Update product error:", error);
 
     res.status(500).json({
@@ -201,23 +204,18 @@ app.put("/api/products/:id", async (req, res) => {
   }
 });
 
-
 // DELETE PRODUCT
 app.delete("/api/products/:id", async (req, res) => {
   try {
-
-    const product =
-      await Product.findByIdAndDelete(
-        req.params.id
-      );
+    const product = await Product.findByIdAndDelete(
+      req.params.id
+    );
 
     if (!product) {
-
       return res.status(404).json({
         success: false,
         message: "Product not found"
       });
-
     }
 
     res.json({
@@ -226,11 +224,7 @@ app.delete("/api/products/:id", async (req, res) => {
     });
 
   } catch (error) {
-
-    console.error(
-      "Delete product error:",
-      error
-    );
+    console.error("Delete product error:", error);
 
     res.status(500).json({
       success: false,
@@ -239,15 +233,13 @@ app.delete("/api/products/:id", async (req, res) => {
   }
 });
 
-
-// =====================================================
+// ==========================================
 // ORDER APIs
-// =====================================================
+// ==========================================
 
 // CREATE ORDER
 app.post("/api/orders", async (req, res) => {
   try {
-
     const {
       customerName,
       email,
@@ -263,12 +255,10 @@ app.post("/api/orders", async (req, res) => {
       items.length === 0 ||
       totalAmount === undefined
     ) {
-
       return res.status(400).json({
         success: false,
         message: "Invalid order data"
       });
-
     }
 
     const order = new Order({
@@ -279,8 +269,7 @@ app.post("/api/orders", async (req, res) => {
       status: "Pending"
     });
 
-    const savedOrder =
-      await order.save();
+    const savedOrder = await order.save();
 
     res.status(201).json({
       success: true,
@@ -289,11 +278,7 @@ app.post("/api/orders", async (req, res) => {
     });
 
   } catch (error) {
-
-    console.error(
-      "Create order error:",
-      error
-    );
+    console.error("Create order error:", error);
 
     res.status(500).json({
       success: false,
@@ -302,15 +287,12 @@ app.post("/api/orders", async (req, res) => {
   }
 });
 
-
 // GET ALL ORDERS
 app.get("/api/orders", async (req, res) => {
   try {
-
-    const orders =
-      await Order.find().sort({
-        createdAt: -1
-      });
+    const orders = await Order.find().sort({
+      createdAt: -1
+    });
 
     res.json({
       success: true,
@@ -318,11 +300,7 @@ app.get("/api/orders", async (req, res) => {
     });
 
   } catch (error) {
-
-    console.error(
-      "Get orders error:",
-      error
-    );
+    console.error("Get orders error:", error);
 
     res.status(500).json({
       success: false,
@@ -331,23 +309,16 @@ app.get("/api/orders", async (req, res) => {
   }
 });
 
-
 // GET SINGLE ORDER
 app.get("/api/orders/:id", async (req, res) => {
   try {
-
-    const order =
-      await Order.findById(
-        req.params.id
-      );
+    const order = await Order.findById(req.params.id);
 
     if (!order) {
-
       return res.status(404).json({
         success: false,
         message: "Order not found"
       });
-
     }
 
     res.json({
@@ -356,11 +327,7 @@ app.get("/api/orders/:id", async (req, res) => {
     });
 
   } catch (error) {
-
-    console.error(
-      "Get order error:",
-      error
-    );
+    console.error("Get order error:", error);
 
     res.status(500).json({
       success: false,
@@ -369,83 +336,62 @@ app.get("/api/orders/:id", async (req, res) => {
   }
 });
 
-
 // UPDATE ORDER STATUS
-app.put(
-  "/api/orders/:id/status",
-  async (req, res) => {
+app.put("/api/orders/:id/status", async (req, res) => {
+  try {
+    const { status } = req.body;
 
-    try {
+    const allowedStatuses = [
+      "Pending",
+      "Processing",
+      "Shipped",
+      "Delivered",
+      "Cancelled"
+    ];
 
-      const {
-        status
-      } = req.body;
-
-      const allowedStatuses = [
-        "Pending",
-        "Processing",
-        "Shipped",
-        "Delivered",
-        "Cancelled"
-      ];
-
-      if (
-        !allowedStatuses.includes(status)
-      ) {
-
-        return res.status(400).json({
-          success: false,
-          message: "Invalid order status"
-        });
-
-      }
-
-      const order =
-        await Order.findByIdAndUpdate(
-          req.params.id,
-          {
-            status: status
-          },
-          {
-            new: true
-          }
-        );
-
-      if (!order) {
-
-        return res.status(404).json({
-          success: false,
-          message: "Order not found"
-        });
-
-      }
-
-      res.json({
-        success: true,
-        message: "Order status updated",
-        order: order
-      });
-
-    } catch (error) {
-
-      console.error(
-        "Update order status error:",
-        error
-      );
-
-      res.status(500).json({
+    if (!allowedStatuses.includes(status)) {
+      return res.status(400).json({
         success: false,
-        message: "Failed to update order status"
+        message: "Invalid order status"
       });
     }
+
+    const order = await Order.findByIdAndUpdate(
+      req.params.id,
+      {
+        status: status
+      },
+      {
+        new: true
+      }
+    );
+
+    if (!order) {
+      return res.status(404).json({
+        success: false,
+        message: "Order not found"
+      });
+    }
+
+    res.json({
+      success: true,
+      message: "Order status updated",
+      order: order
+    });
+
+  } catch (error) {
+    console.error("Update order status error:", error);
+
+    res.status(500).json({
+      success: false,
+      message: "Failed to update order status"
+    });
   }
-);
+});
 
-
-
-// =====================================================
+// ==========================================
 // ADMIN LOGIN
-// =====================================================
+// ==========================================
 
 app.post("/api/admin/login", (req, res) => {
   const { username, password } = req.body || {};
@@ -453,22 +399,25 @@ app.post("/api/admin/login", (req, res) => {
   const validUsername = process.env.ADMIN_USERNAME;
   const validPassword = process.env.ADMIN_PASSWORD;
 
+  // Check Render environment variables
   if (!validUsername || !validPassword) {
     return res.status(500).json({
       success: false,
-      message: "Admin credentials are not configured in .env"
+      message: "Admin credentials are not configured on the server"
     });
   }
 
-  if (username !== validUsername || password !== validPassword) {
+  // Check credentials
+  if (
+    username !== validUsername ||
+    password !== validPassword
+  ) {
     return res.status(401).json({
       success: false,
       message: "Invalid username or password"
     });
   }
 
-  // Local-development login marker. For production, use a proper
-  // session/JWT authentication system before deployment.
   return res.json({
     success: true,
     message: "Login successful",
@@ -476,15 +425,12 @@ app.post("/api/admin/login", (req, res) => {
   });
 });
 
-
-// =====================================================
+// ==========================================
 // SERVER
-// =====================================================
+// ==========================================
 
-app.listen(PORT, () => {
-
+app.listen(PORT, "0.0.0.0", () => {
   console.log(
-    `Server running at http://localhost:${PORT}`
+    `ITACHI MART server running on port ${PORT}`
   );
-
 });
