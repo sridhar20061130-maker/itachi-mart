@@ -1,4 +1,7 @@
-const API_URL="http://localhost:3000/api/products";const ORDER_API_URL="http://localhost:3000/api/orders";let products=[],orders=[],editingProductId=null;
+const API_BASE_URL="https://itachi-mart.onrender.com";
+const API_URL=`${API_BASE_URL}/api/products`;
+const ORDER_API_URL=`${API_BASE_URL}/api/orders`;
+let products=[],orders=[],editingProductId=null;
 document.addEventListener("DOMContentLoaded",()=>{document.getElementById("currentYear").textContent=new Date().getFullYear();document.getElementById("productForm").addEventListener("submit",saveProduct);document.getElementById("productSearch").addEventListener("input",renderProducts);document.getElementById("productFilter").addEventListener("change",renderProducts);document.getElementById("productSort").addEventListener("change",renderProducts);document.getElementById("orderSearch").addEventListener("input",renderOrders);document.getElementById("orderStatusFilter").addEventListener("change",renderOrders);document.getElementById("productImage").addEventListener("input",previewImage);document.getElementById("cancelEdit").addEventListener("click",()=>resetProductForm());document.getElementById("refreshAnalytics").addEventListener("click",refreshAll);setupNavigation();refreshAll()});
 async function refreshAll(){await Promise.all([loadProducts(),loadOrders()]);updateDashboard();renderAnalytics()}
 async function loadProducts(){setLoading("productsLoading",true);try{const r=await fetch(API_URL);if(!r.ok)throw Error();const data=await r.json();products=Array.isArray(data)?data:(Array.isArray(data.products)?data.products:[]);renderProducts()}catch(e){showToast("Product API is unavailable.")}finally{setLoading("productsLoading",false)}}
