@@ -12,53 +12,51 @@
 
 <body>
 
-    <!-- BACKGROUND -->
+    <!-- ================================
+         BACKGROUND
+    ================================= -->
+
     <div class="background-grid"></div>
 
     <div class="ambient ambient-one"></div>
     <div class="ambient ambient-two"></div>
 
 
-    <!-- HEADER -->
+    <!-- ================================
+         HEADER
+    ================================= -->
 
     <header class="store-header">
 
-        <a href="#" class="logo">
+        <a href="#home" class="logo">
             ITACHI <span>MART</span>
         </a>
 
-
         <nav>
-
             <a href="#home">Home</a>
-
             <a href="#products">Products</a>
-
             <a href="#about">About</a>
-
             <a href="#contact">Contact</a>
-
         </nav>
-
 
         <button
             id="cartButton"
             class="cart-button"
+            type="button"
         >
-
             🛒 Cart
 
             <span id="cartCount">
                 0
             </span>
-
         </button>
 
     </header>
 
 
-
-    <!-- HERO -->
+    <!-- ================================
+         HERO
+    ================================= -->
 
     <section
         id="home"
@@ -71,18 +69,15 @@
                 ✦ NEXT GENERATION SHOPPING
             </span>
 
-
             <h1>
                 SHOP THE
                 <span>FUTURE.</span>
             </h1>
 
-
             <p>
                 Discover premium products with
                 a futuristic shopping experience.
             </p>
-
 
             <a
                 href="#products"
@@ -109,8 +104,9 @@
     </section>
 
 
-
-    <!-- PRODUCTS -->
+    <!-- ================================
+         PRODUCTS
+    ================================= -->
 
     <section
         id="products"
@@ -134,14 +130,13 @@
         </div>
 
 
-
-        <!-- CONTROLS -->
+        <!-- PRODUCT CONTROLS -->
 
         <div class="store-controls">
 
             <input
                 type="text"
-                id="searchInput"
+                id="productSearch"
                 placeholder="🔎 Search products..."
             >
 
@@ -155,17 +150,17 @@
             </select>
 
 
-            <select id="sortFilter">
+            <select id="productSort">
 
                 <option value="default">
                     Sort By
                 </option>
 
-                <option value="price-low">
+                <option value="priceLow">
                     Price: Low → High
                 </option>
 
-                <option value="price-high">
+                <option value="priceHigh">
                     Price: High → Low
                 </option>
 
@@ -183,6 +178,7 @@
             <button
                 id="resetFilters"
                 class="reset-button"
+                type="button"
             >
                 Reset
             </button>
@@ -190,12 +186,12 @@
         </div>
 
 
-
         <!-- LOADING -->
 
         <div
-            id="loading"
+            id="productsLoading"
             class="loading"
+            hidden
         >
             Loading products...
         </div>
@@ -222,6 +218,7 @@
         <div
             id="emptyProducts"
             class="empty-products"
+            hidden
         >
             No products found.
         </div>
@@ -229,8 +226,9 @@
     </section>
 
 
-
-    <!-- ABOUT -->
+    <!-- ================================
+         ABOUT
+    ================================= -->
 
     <section
         id="about"
@@ -254,8 +252,9 @@
     </section>
 
 
-
-    <!-- CONTACT -->
+    <!-- ================================
+         CONTACT
+    ================================= -->
 
     <section
         id="contact"
@@ -278,8 +277,9 @@
     </section>
 
 
-
-    <!-- PRODUCT DETAILS MODAL -->
+    <!-- ================================
+         PRODUCT DETAILS MODAL
+    ================================= -->
 
     <div
         id="productModal"
@@ -290,11 +290,11 @@
 
             <button
                 class="modal-close"
-                id="productModalClose"
+                id="closeProductModal"
+                type="button"
             >
                 ×
             </button>
-
 
             <div id="productDetails"></div>
 
@@ -303,8 +303,9 @@
     </div>
 
 
-
-    <!-- CART MODAL -->
+    <!-- ================================
+         CART MODAL
+    ================================= -->
 
     <div
         id="cartModal"
@@ -315,7 +316,8 @@
 
             <button
                 class="modal-close"
-                id="cartClose"
+                id="closeCart"
+                type="button"
             >
                 ×
             </button>
@@ -348,6 +350,7 @@
             <button
                 id="checkoutButton"
                 class="checkout-button"
+                type="button"
             >
                 Checkout
             </button>
@@ -357,8 +360,9 @@
     </div>
 
 
-
-    <!-- CHECKOUT MODAL -->
+    <!-- ================================
+         CHECKOUT MODAL
+    ================================= -->
 
     <div
         id="checkoutModal"
@@ -369,7 +373,8 @@
 
             <button
                 class="modal-close"
-                id="checkoutClose"
+                id="closeCheckout"
+                type="button"
             >
                 ×
             </button>
@@ -380,23 +385,104 @@
             </h2>
 
 
+            <p class="checkout-subtitle">
+                Enter your delivery details
+            </p>
+
+
+            <!-- CHECKOUT FORM -->
+
             <form id="checkoutForm">
 
-                <input
-                    type="text"
-                    id="customerName"
-                    placeholder="Your Name"
-                    required
-                >
+                <!-- CUSTOMER NAME -->
+
+                <div class="checkout-field">
+
+                    <label for="customerName">
+                        Full Name
+                    </label>
+
+                    <input
+                        type="text"
+                        id="customerName"
+                        name="customerName"
+                        placeholder="Enter your full name"
+                        autocomplete="name"
+                        required
+                    >
+
+                </div>
 
 
-                <input
-                    type="email"
-                    id="customerEmail"
-                    placeholder="Email Address"
-                    required
-                >
+                <!-- EMAIL -->
 
+                <div class="checkout-field">
+
+                    <label for="customerEmail">
+                        Email Address
+                    </label>
+
+                    <input
+                        type="email"
+                        id="customerEmail"
+                        name="customerEmail"
+                        placeholder="Enter your email address"
+                        autocomplete="email"
+                        required
+                    >
+
+                </div>
+
+
+                <!-- PHONE -->
+
+                <div class="checkout-field">
+
+                    <label for="customerPhone">
+                        Phone Number
+                    </label>
+
+                    <input
+                        type="tel"
+                        id="customerPhone"
+                        name="customerPhone"
+                        placeholder="Enter your phone number"
+                        autocomplete="tel"
+                        required
+                    >
+
+                </div>
+
+
+                <!-- ADDRESS -->
+
+                <div class="checkout-field">
+
+                    <label for="customerAddress">
+                        Delivery Address
+                    </label>
+
+                    <textarea
+                        id="customerAddress"
+                        name="customerAddress"
+                        placeholder="Enter your complete delivery address"
+                        rows="4"
+                        autocomplete="street-address"
+                        required
+                    ></textarea>
+
+                </div>
+
+
+                <!-- CHECKOUT MESSAGE -->
+
+                <div
+                    id="checkoutMessage"
+                    class="checkout-message"
+                ></div>
+
+
+                <!-- PLACE ORDER -->
 
                 <button
                     type="submit"
@@ -407,28 +493,28 @@
 
             </form>
 
-
-            <div
-                id="checkoutMessage"
-                class="checkout-message"
-            ></div>
-
         </div>
 
     </div>
 
 
-
-    <!-- TOAST -->
+    <!-- ================================
+         TOAST
+    ================================= -->
 
     <div
         id="toast"
         class="toast"
-    ></div>
+    >
+
+        <span id="toastMessage"></span>
+
+    </div>
 
 
-
-    <!-- FOOTER -->
+    <!-- ================================
+         FOOTER
+    ================================= -->
 
     <footer>
 
@@ -443,6 +529,9 @@
     </footer>
 
 
+    <!-- ================================
+         JAVASCRIPT
+    ================================= -->
 
     <script src="script.js"></script>
 
