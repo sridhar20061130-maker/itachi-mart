@@ -2854,3 +2854,8 @@ window.deleteProduct =
 
 window.updateOrderStatus =
     updateOrderStatus;
+    window.editProduct = editProduct;
+
+window.deleteProduct = deleteProduct;
+
+window.updateOrderStatus = updateOrderStatus;
