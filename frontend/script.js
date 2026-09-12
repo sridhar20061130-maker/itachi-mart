@@ -630,15 +630,14 @@ function renderProducts(
                     <div class="product-actions">
 
                         <button
-                            class="view-button"
-                            onclick="
-                                showProductDetails(
-                                    '${product._id}'
-                                )
-                            "
-                        >
-                            Details
-                        </button>
+    class="view-button"
+    onclick="
+        window.location.href =
+        'product-details.html?id=${product._id}'
+    "
+>
+    View Details
+</button>
 
 
                         <button

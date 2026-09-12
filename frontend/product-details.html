@@ -1,0 +1,434 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>Product Details | Itachi Mart</title>
+
+    <link rel="stylesheet" href="style.css">
+
+    <style>
+        .product-details-page {
+            min-height: 100vh;
+            padding: 40px 20px;
+        }
+
+        .details-container {
+            width: 100%;
+            max-width: 1150px;
+            margin: 0 auto;
+        }
+
+        .details-topbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+        }
+
+        .details-topbar h1 {
+            font-size: 26px;
+            color: #00eaff;
+        }
+
+        .back-button {
+            display: inline-block;
+            padding: 12px 18px;
+            border-radius: 10px;
+            color: white;
+            text-decoration: none;
+            background: rgba(255, 255, 255, 0.08);
+            border: 1px solid rgba(0, 234, 255, 0.25);
+            transition: 0.3s;
+        }
+
+        .back-button:hover {
+            background: rgba(0, 234, 255, 0.12);
+            border-color: #00eaff;
+            transform: translateY(-2px);
+        }
+
+        .product-details-card {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 45px;
+            padding: 35px;
+            border-radius: 22px;
+            background: rgba(8, 12, 25, 0.85);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 20px 70px rgba(0, 0, 0, 0.3);
+        }
+
+        .product-image-section {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 400px;
+            padding: 25px;
+            border-radius: 18px;
+            background: rgba(255, 255, 255, 0.035);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+        }
+
+        .product-image-section img {
+            width: 100%;
+            max-width: 420px;
+            max-height: 450px;
+            object-fit: contain;
+            border-radius: 15px;
+        }
+
+        .product-info-section {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        .product-category {
+            display: inline-block;
+            width: fit-content;
+            margin-bottom: 15px;
+            padding: 7px 12px;
+            border-radius: 20px;
+            color: #00eaff;
+            background: rgba(0, 234, 255, 0.08);
+            border: 1px solid rgba(0, 234, 255, 0.2);
+            font-size: 12px;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+        }
+
+        .product-name {
+            margin-bottom: 18px;
+            color: white;
+            font-size: clamp(28px, 4vw, 42px);
+            line-height: 1.2;
+        }
+
+        .product-description {
+            margin-bottom: 25px;
+            color: rgba(255, 255, 255, 0.65);
+            font-size: 15px;
+            line-height: 1.8;
+        }
+
+        .product-price {
+            margin-bottom: 12px;
+            color: #00ffae;
+            font-size: 32px;
+            font-weight: 800;
+        }
+
+        .product-stock {
+            margin-bottom: 25px;
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 14px;
+        }
+
+        .stock-available {
+            color: #00ffae;
+            font-weight: 700;
+        }
+
+        .stock-unavailable {
+            color: #ff7185;
+            font-weight: 700;
+        }
+
+        .quantity-title {
+            margin-bottom: 10px;
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 13px;
+            font-weight: 700;
+        }
+
+        .quantity-box {
+            display: flex;
+            align-items: center;
+            gap: 18px;
+            margin-bottom: 25px;
+        }
+
+        .quantity-box button {
+            width: 42px;
+            height: 42px;
+            border: 1px solid rgba(0, 234, 255, 0.35);
+            border-radius: 9px;
+            background: rgba(0, 234, 255, 0.08);
+            color: white;
+            font-size: 23px;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+
+        .quantity-box button:hover {
+            background: rgba(0, 234, 255, 0.2);
+            border-color: #00eaff;
+        }
+
+        .quantity-box button:disabled {
+            opacity: 0.35;
+            cursor: not-allowed;
+        }
+
+        #productQuantity {
+            min-width: 30px;
+            text-align: center;
+            color: white;
+            font-size: 20px;
+            font-weight: 800;
+        }
+
+        .details-actions {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+
+        .add-cart-button,
+        .store-button {
+            padding: 14px 22px;
+            border: none;
+            border-radius: 10px;
+            color: white;
+            font-weight: 800;
+            text-decoration: none;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+
+        .add-cart-button {
+            background: linear-gradient(
+                135deg,
+                #6c4cff,
+                #00bcd4
+            );
+        }
+
+        .store-button {
+            background: rgba(255, 255, 255, 0.08);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+        }
+
+        .add-cart-button:hover,
+        .store-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.25);
+        }
+
+        .add-cart-button:disabled {
+            opacity: 0.45;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        .loading-message,
+        .error-message {
+            padding: 40px;
+            text-align: center;
+            color: rgba(255, 255, 255, 0.65);
+        }
+
+        .error-message {
+            color: #ff7185;
+        }
+
+        @media (max-width: 850px) {
+            .product-details-card {
+                grid-template-columns: 1fr;
+                gap: 25px;
+                padding: 22px;
+            }
+
+            .product-image-section {
+                min-height: 280px;
+            }
+
+            .product-image-section img {
+                max-height: 320px;
+            }
+        }
+
+        @media (max-width: 500px) {
+            .product-details-page {
+                padding: 25px 15px;
+            }
+
+            .details-topbar h1 {
+                font-size: 21px;
+            }
+
+            .product-details-card {
+                padding: 18px;
+            }
+
+            .product-name {
+                font-size: 28px;
+            }
+
+            .product-price {
+                font-size: 27px;
+            }
+
+            .details-actions {
+                flex-direction: column;
+            }
+
+            .add-cart-button,
+            .store-button {
+                width: 100%;
+                text-align: center;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="background-grid"></div>
+
+    <div class="ambient ambient-one"></div>
+    <div class="ambient ambient-two"></div>
+
+    <main class="product-details-page">
+
+        <div class="details-container">
+
+            <div class="details-topbar">
+
+                <h1>ITACHI MART</h1>
+
+                <a
+                    href="index.html"
+                    class="back-button"
+                >
+                    ← Back to Store
+                </a>
+
+            </div>
+
+            <section
+                class="product-details-card"
+                id="productDetailsCard"
+            >
+
+                <div class="product-image-section">
+
+                    <img
+                        id="productImage"
+                        src=""
+                        alt="Product image"
+                    >
+
+                </div>
+
+                <div class="product-info-section">
+
+                    <span
+                        class="product-category"
+                        id="productCategory"
+                    >
+                        Loading category...
+                    </span>
+
+                    <h2
+                        class="product-name"
+                        id="productName"
+                    >
+                        Loading product...
+                    </h2>
+
+                    <p
+                        class="product-description"
+                        id="productDescription"
+                    >
+                        Loading product description...
+                    </p>
+
+                    <div
+                        class="product-price"
+                        id="productPrice"
+                    >
+                        ₹0
+                    </div>
+
+                    <div
+                        class="product-stock"
+                        id="productStock"
+                    >
+                        Checking stock...
+                    </div>
+
+                    <div class="quantity-title">
+                        Select Quantity
+                    </div>
+
+                    <div class="quantity-box">
+
+                        <button
+                            id="decreaseQuantity"
+                            type="button"
+                        >
+                            −
+                        </button>
+
+                        <span id="productQuantity">
+                            1
+                        </span>
+
+                        <button
+                            id="increaseQuantity"
+                            type="button"
+                        >
+                            +
+                        </button>
+
+                    </div>
+
+                    <div class="details-actions">
+
+                        <button
+                            id="addToCartButton"
+                            class="add-cart-button"
+                            type="button"
+                            disabled
+                        >
+                            Add to Cart
+                        </button>
+
+                        <a
+                            href="index.html"
+                            class="store-button"
+                        >
+                            Continue Shopping
+                        </a>
+
+                    </div>
+
+                </div>
+
+            </section>
+
+            <div
+                id="loadingMessage"
+                class="loading-message"
+            >
+                Loading product details...
+            </div>
+
+        </div>
+
+    </main>
+
+    <script src="product-details.js"></script>
+
+</body>
+</html>
