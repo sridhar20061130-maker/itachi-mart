@@ -1,32 +1,2113 @@
-const API_BASE_URL="https://itachi-mart.onrender.com";
-const API_URL=`${API_BASE_URL}/api/products`;
-const ORDER_API_URL=`${API_BASE_URL}/api/orders`;
-let products=[],orders=[],editingProductId=null;
-document.addEventListener("DOMContentLoaded",()=>{document.getElementById("currentYear").textContent=new Date().getFullYear();document.getElementById("productForm").addEventListener("submit",saveProduct);document.getElementById("productSearch").addEventListener("input",renderProducts);document.getElementById("productFilter").addEventListener("change",renderProducts);document.getElementById("productSort").addEventListener("change",renderProducts);document.getElementById("orderSearch").addEventListener("input",renderOrders);document.getElementById("orderStatusFilter").addEventListener("change",renderOrders);document.getElementById("productImage").addEventListener("input",previewImage);document.getElementById("cancelEdit").addEventListener("click",()=>resetProductForm());document.getElementById("refreshAnalytics").addEventListener("click",refreshAll);setupNavigation();refreshAll()});
-async function refreshAll(){await Promise.all([loadProducts(),loadOrders()]);updateDashboard();renderAnalytics()}
-async function loadProducts(){setLoading("productsLoading",true);try{const r=await fetch(API_URL);if(!r.ok)throw Error();const data=await r.json();products=Array.isArray(data)?data:(Array.isArray(data.products)?data.products:[]);renderProducts()}catch(e){showToast("Product API is unavailable.")}finally{setLoading("productsLoading",false)}}
-async function loadOrders(){setLoading("ordersLoading",true);try{const r=await fetch(ORDER_API_URL);if(!r.ok)throw Error();const data=await r.json();orders=Array.isArray(data)?data:(Array.isArray(data.orders)?data.orders:[]);renderOrders()}catch(e){showToast("Order API is unavailable.")}finally{setLoading("ordersLoading",false)}}
-function renderProducts(){const body=document.getElementById("productsTableBody"),search=document.getElementById("productSearch").value.toLowerCase().trim(),cat=document.getElementById("productFilter").value,sort=document.getElementById("productSort").value;let list=products.filter(p=>(String(p.name||"").toLowerCase().includes(search)||String(p.description||"").toLowerCase().includes(search))&&(cat==="all"||p.category===cat));list.sort((a,b)=>sort==="name"?String(a.name).localeCompare(String(b.name)):sort==="priceLow"?a.price-b.price:sort==="priceHigh"?b.price-a.price:sort==="stockLow"?a.stock-b.stock:new Date(b.createdAt||0)-new Date(a.createdAt||0));body.innerHTML=list.map(p=>`<tr><td><div class="product-cell"><img src="${escapeHTML(p.image)}" alt="${escapeHTML(p.name)}" onerror="this.style.visibility='hidden'"><strong>${escapeHTML(p.name)}</strong></div></td><td><span class="badge">${escapeHTML(p.category)}</span></td><td>${formatPrice(p.price)}</td><td class="${p.stock===0?"stock-out":p.stock<5?"stock-low":""}">${p.stock}</td><td><div class="action-buttons"><button class="action-btn edit" onclick="editProduct('${p._id}')">Edit</button><button class="action-btn delete" onclick="deleteProduct('${p._id}')">Delete</button></div></td></tr>`).join("");document.getElementById("productsEmpty").hidden=list.length>0;updateProductCount(list.length)}
-async function saveProduct(e){e.preventDefault();const product={name:productName.value.trim(),category:productCategory.value,price:Number(productPrice.value),stock:Number(productStock.value),image:productImage.value.trim(),description:productDescription.value.trim()};clearMessages();if(!product.name||!product.category||!product.image||!product.description||product.price<0||product.stock<0||Number.isNaN(product.price)||Number.isNaN(product.stock)){showError("Please fill all fields correctly.");return}const edit=!!editingProductId;try{const r=await fetch(edit?`${API_URL}/${editingProductId}`:API_URL,{method:edit?"PUT":"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(product)});const data=await r.json().catch(()=>({}));if(!r.ok)throw Error(data.message||"Request failed");showSuccess(edit?"Product updated successfully.":"Product added successfully.");showToast(edit?"Product updated.":"Product added.");resetProductForm(false);await loadProducts();updateDashboard();renderAnalytics()}catch(err){showError(err.message||"Could not save product.")}}
-function editProduct(id){const p=products.find(x=>x._id===id);if(!p)return;editingProductId=id;productName.value=p.name||"";productCategory.value=p.category||"";productPrice.value=p.price??"";productStock.value=p.stock??"";productImage.value=p.image||"";productDescription.value=p.description||"";addProductButton.textContent="✓ Update Product";cancelEdit.hidden=false;previewImage();document.getElementById("add-product").scrollIntoView({behavior:"smooth"});showToast("Editing "+p.name)}
-async function deleteProduct(id){const p=products.find(x=>x._id===id);if(!p||!confirm(`Delete "${p.name}"?`))return;try{const r=await fetch(`${API_URL}/${id}`,{method:"DELETE"});if(!r.ok)throw Error("Delete failed");showToast("Product deleted.");await loadProducts();updateDashboard();renderAnalytics()}catch(e){showToast(e.message||"Could not delete product.")}}
-function resetProductForm(clear=true){editingProductId=null;document.getElementById("productForm").reset();addProductButton.textContent="＋ Add Product";cancelEdit.hidden=true;imagePreview.innerHTML="IMAGE PREVIEW";if(clear)clearMessages()}
-function previewImage(){const url=productImage.value.trim();imagePreview.innerHTML=url?`<img src="${escapeHTML(url)}" alt="Preview" onerror="this.parentElement.innerHTML='IMAGE COULD NOT LOAD'">`:"IMAGE PREVIEW"}
-function renderOrders(){const grid=ordersGrid,search=orderSearch.value.toLowerCase().trim(),status=orderStatusFilter.value;const list=orders.filter(o=>(String(o.customerName||"").toLowerCase().includes(search)||String(o.email||"").toLowerCase().includes(search)||String(o._id||"").toLowerCase().includes(search))&&(status==="all"||o.status===status));grid.innerHTML=list.map(o=>{const items=o.items||[];return `<article class="order-card"><div class="order-head"><div><div class="order-id">ORDER #${escapeHTML(String(o._id||"").slice(-8).toUpperCase())}</div><div class="order-customer">${escapeHTML(o.customerName||"Customer")}</div><div class="order-email">${escapeHTML(o.email||"")}</div></div><span class="badge status-${String(o.status||"Pending").toLowerCase()}">${escapeHTML(o.status||"Pending")}</span></div><div class="order-meta"><span class="order-total">${formatPrice(o.totalAmount)}</span><span class="order-date">${formatDate(o.createdAt)}</span></div><div class="order-items">${items.map(i=>`${escapeHTML(i.name)} × ${Number(i.quantity)}`).join("<br>")||"No item details"}</div><select class="status-select" onchange="updateOrderStatus('${o._id}',this.value)">${getStatusOptions(o.status)}</select></article>`}).join("");ordersEmpty.hidden=list.length>0}
-async function updateOrderStatus(id,status){try{const r=await fetch(`${ORDER_API_URL}/${id}/status`,{method:"PUT",headers:{"Content-Type":"application/json"},body:JSON.stringify({status})});if(!r.ok)throw Error("Status update failed");const o=orders.find(x=>x._id===id);if(o)o.status=status;showToast("Order status updated.");renderOrders();updateDashboard();renderAnalytics()}catch(e){showToast(e.message||"Could not update order.")}}
-function updateDashboard(){totalProducts.textContent=products.length;totalOrders.textContent=orders.length;pendingOrders.textContent=orders.filter(o=>String(o.status||"Pending").toLowerCase()==="pending").length;totalRevenue.textContent=formatPrice(orders.reduce((s,o)=>String(o.status||"").toLowerCase()==="cancelled"?s:s+Number(o.totalAmount||0),0))}
-function renderAnalytics(){renderRevenueChart();renderStatusChart();renderTopProducts()}
-function getDays(){const a=[],n=new Date();for(let i=6;i>=0;i--){const d=new Date(n);d.setHours(0,0,0,0);d.setDate(n.getDate()-i);a.push(d)}return a}
-function renderRevenueChart(){const days=getDays(),values=days.map(day=>orders.reduce((s,o)=>{if(!o.createdAt||String(o.status).toLowerCase()==="cancelled")return s;const d=new Date(o.createdAt);return d.toDateString()===day.toDateString()?s+Number(o.totalAmount||0):s},0)),max=Math.max(...values,1);sevenDayRevenue.textContent=formatPrice(values.reduce((a,b)=>a+b,0));revenueChart.innerHTML=values.map((v,i)=>`<div class="bar-item"><em>${formatCompact(v)}</em><div class="bar" style="height:${Math.max(v/max*100,v?8:2)}%"></div><small>${days[i].toLocaleDateString("en-IN",{weekday:"short"})}</small></div>`).join("")}
-function renderStatusChart(){const ss=["Pending","Processing","Shipped","Delivered","Cancelled"],cs=ss.map(s=>orders.filter(o=>String(o.status||"Pending").toLowerCase()===s.toLowerCase()).length),max=Math.max(...cs,1);statusChart.innerHTML=ss.map((s,i)=>`<div class="status-row"><span>${s}</span><div class="status-track"><div class="status-fill" style="width:${cs[i]/max*100}%"></div></div><strong>${cs[i]}</strong></div>`).join("")}
-function renderTopProducts(){const totals={};orders.forEach(o=>{if(String(o.status||"").toLowerCase()==="cancelled")return;(o.items||[]).forEach(i=>totals[i.name]=(totals[i.name]||0)+Number(i.quantity||0))});const top=Object.entries(totals).sort((a,b)=>b[1]-a[1]).slice(0,5);topProducts.innerHTML=top.length?top.map(([n,q],i)=>`<div class="top-row"><span class="rank">0${i+1}</span><span class="top-name">${escapeHTML(n)}</span><span class="top-qty">${q} sold</span></div>`).join(""):`<div class="empty-state">No sales data yet.</div>`}
-function updateProductCount(n=products.length){productCount.textContent=`${n} product${n===1?"":"s"}`}
-function getStatusOptions(c){return["Pending","Processing","Shipped","Delivered","Cancelled"].map(s=>`<option value="${s}" ${s===c?"selected":""}>${s}</option>`).join("")}
-function formatPrice(v){return new Intl.NumberFormat("en-IN",{style:"currency",currency:"INR",maximumFractionDigits:2}).format(Number(v||0))}
-function formatCompact(v){return v>=100000?"₹"+(v/100000).toFixed(1)+"L":v>=1000?"₹"+(v/1000).toFixed(1)+"K":"₹"+Math.round(v)}
-function formatDate(v){if(!v)return"Unknown date";const d=new Date(v);return Number.isNaN(d.getTime())?"Unknown date":d.toLocaleDateString("en-IN",{day:"2-digit",month:"short",year:"numeric"})}
-function escapeHTML(v){return String(v??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[c]))}
-function setLoading(id,x){document.getElementById(id).hidden=!x}function clearMessages(){successMessage.textContent="";errorMessage.textContent=""}function showSuccess(x){successMessage.textContent=x}function showError(x){errorMessage.textContent=x}
-function showToast(x){toastMessage.textContent=x;adminToast.classList.add("show");clearTimeout(window.__toast);window.__toast=setTimeout(()=>adminToast.classList.remove("show"),2500)}
-function setupNavigation(){const links=document.querySelectorAll(".side-link");links.forEach(l=>l.addEventListener("click",()=>{links.forEach(x=>x.classList.remove("active"));l.classList.add("active")}))}
-window.editProduct=editProduct;window.deleteProduct=deleteProduct;window.updateOrderStatus=updateOrderStatus;
+/* ==========================================
+   ITACHI MART - ADMIN JAVASCRIPT
+========================================== */
+
+const API_BASE_URL = "https://itachi-mart.onrender.com";
+
+const API_URL = `${API_BASE_URL}/api/products`;
+const ORDER_API_URL = `${API_BASE_URL}/api/orders`;
+
+let products = [];
+let orders = [];
+let editingProductId = null;
+
+
+/* ==========================================
+   INITIALIZATION
+========================================== */
+
+document.addEventListener("DOMContentLoaded", () => {
+
+    const currentYear = document.getElementById("currentYear");
+
+    if (currentYear) {
+        currentYear.textContent = new Date().getFullYear();
+    }
+
+    const productForm = document.getElementById("productForm");
+
+    if (productForm) {
+        productForm.addEventListener(
+            "submit",
+            saveProduct
+        );
+    }
+
+    const productSearch =
+        document.getElementById("productSearch");
+
+    if (productSearch) {
+        productSearch.addEventListener(
+            "input",
+            renderProducts
+        );
+    }
+
+    const productFilter =
+        document.getElementById("productFilter");
+
+    if (productFilter) {
+        productFilter.addEventListener(
+            "change",
+            renderProducts
+        );
+    }
+
+    const productSort =
+        document.getElementById("productSort");
+
+    if (productSort) {
+        productSort.addEventListener(
+            "change",
+            renderProducts
+        );
+    }
+
+    const orderSearch =
+        document.getElementById("orderSearch");
+
+    if (orderSearch) {
+        orderSearch.addEventListener(
+            "input",
+            renderOrders
+        );
+    }
+
+    const orderStatusFilter =
+        document.getElementById("orderStatusFilter");
+
+    if (orderStatusFilter) {
+        orderStatusFilter.addEventListener(
+            "change",
+            renderOrders
+        );
+    }
+
+    const productImage =
+        document.getElementById("productImage");
+
+    if (productImage) {
+        productImage.addEventListener(
+            "input",
+            previewImage
+        );
+    }
+
+    const cancelEdit =
+        document.getElementById("cancelEdit");
+
+    if (cancelEdit) {
+        cancelEdit.addEventListener(
+            "click",
+            () => resetProductForm()
+        );
+    }
+
+    const refreshAnalytics =
+        document.getElementById("refreshAnalytics");
+
+    if (refreshAnalytics) {
+        refreshAnalytics.addEventListener(
+            "click",
+            refreshAll
+        );
+    }
+
+    setupNavigation();
+
+    refreshAll();
+});
+
+
+/* ==========================================
+   REFRESH EVERYTHING
+========================================== */
+
+async function refreshAll() {
+
+    await Promise.all([
+        loadProducts(),
+        loadOrders()
+    ]);
+
+    updateDashboard();
+
+    renderAnalytics();
+}
+
+
+/* ==========================================
+   LOAD PRODUCTS
+========================================== */
+
+async function loadProducts() {
+
+    setLoading(
+        "productsLoading",
+        true
+    );
+
+    try {
+
+        const response =
+            await fetch(API_URL);
+
+        if (!response.ok) {
+            throw new Error(
+                "Product API unavailable."
+            );
+        }
+
+        const data =
+            await response.json();
+
+        products =
+            Array.isArray(data)
+                ? data
+                : Array.isArray(data.products)
+                    ? data.products
+                    : [];
+
+        updateCategoryFilter();
+
+        renderProducts();
+
+    } catch (error) {
+
+        console.error(
+            "Product loading error:",
+            error
+        );
+
+        showToast(
+            "Product API is unavailable."
+        );
+
+    } finally {
+
+        setLoading(
+            "productsLoading",
+            false
+        );
+    }
+}
+
+
+/* ==========================================
+   LOAD ORDERS
+========================================== */
+
+async function loadOrders() {
+
+    setLoading(
+        "ordersLoading",
+        true
+    );
+
+    try {
+
+        const response =
+            await fetch(ORDER_API_URL);
+
+        if (!response.ok) {
+            throw new Error(
+                "Order API unavailable."
+            );
+        }
+
+        const data =
+            await response.json();
+
+        orders =
+            Array.isArray(data)
+                ? data
+                : Array.isArray(data.orders)
+                    ? data.orders
+                    : [];
+
+        renderOrders();
+
+    } catch (error) {
+
+        console.error(
+            "Order loading error:",
+            error
+        );
+
+        showToast(
+            "Order API is unavailable."
+        );
+
+    } finally {
+
+        setLoading(
+            "ordersLoading",
+            false
+        );
+    }
+}
+
+
+/* ==========================================
+   PRODUCT CATEGORY FILTER
+========================================== */
+
+function updateCategoryFilter() {
+
+    const filter =
+        document.getElementById(
+            "productFilter"
+        );
+
+    if (!filter) return;
+
+    const currentValue =
+        filter.value;
+
+    const categories =
+        [
+            ...new Set(
+                products
+                    .map(product => product.category)
+                    .filter(Boolean)
+            )
+        ].sort();
+
+    filter.innerHTML =
+        `<option value="all">
+            All Categories
+        </option>`;
+
+    categories.forEach(category => {
+
+        const option =
+            document.createElement("option");
+
+        option.value = category;
+
+        option.textContent = category;
+
+        filter.appendChild(option);
+    });
+
+    if (
+        categories.includes(currentValue)
+    ) {
+        filter.value = currentValue;
+    }
+}
+
+
+/* ==========================================
+   RENDER PRODUCTS
+========================================== */
+
+function renderProducts() {
+
+    const body =
+        document.getElementById(
+            "productsTableBody"
+        );
+
+    if (!body) return;
+
+    const search =
+        (
+            document.getElementById(
+                "productSearch"
+            )?.value || ""
+        )
+            .toLowerCase()
+            .trim();
+
+    const category =
+        document.getElementById(
+            "productFilter"
+        )?.value || "all";
+
+    const sort =
+        document.getElementById(
+            "productSort"
+        )?.value || "newest";
+
+
+    let list =
+        products.filter(product => {
+
+            const matchesSearch =
+                String(product.name || "")
+                    .toLowerCase()
+                    .includes(search)
+                ||
+                String(product.description || "")
+                    .toLowerCase()
+                    .includes(search);
+
+            const matchesCategory =
+                category === "all"
+                ||
+                product.category === category;
+
+            return (
+                matchesSearch &&
+                matchesCategory
+            );
+        });
+
+
+    list.sort((a, b) => {
+
+        if (sort === "name") {
+            return String(a.name)
+                .localeCompare(
+                    String(b.name)
+                );
+        }
+
+        if (sort === "priceLow") {
+            return Number(a.price) -
+                   Number(b.price);
+        }
+
+        if (sort === "priceHigh") {
+            return Number(b.price) -
+                   Number(a.price);
+        }
+
+        if (sort === "stockLow") {
+            return Number(a.stock) -
+                   Number(b.stock);
+        }
+
+        return (
+            new Date(b.createdAt || 0) -
+            new Date(a.createdAt || 0)
+        );
+    });
+
+
+    body.innerHTML =
+        list.map(product => {
+
+            const stockClass =
+                Number(product.stock) === 0
+                    ? "stock-out"
+                    : Number(product.stock) < 5
+                        ? "stock-low"
+                        : "";
+
+            return `
+                <tr>
+
+                    <td>
+
+                        <div class="product-cell">
+
+                            <img
+                                src="${escapeHTML(product.image)}"
+                                alt="${escapeHTML(product.name)}"
+                                onerror="this.style.visibility='hidden'"
+                            >
+
+                            <strong>
+                                ${escapeHTML(product.name)}
+                            </strong>
+
+                        </div>
+
+                    </td>
+
+                    <td>
+                        <span class="badge">
+                            ${escapeHTML(product.category)}
+                        </span>
+                    </td>
+
+                    <td>
+                        ${formatPrice(product.price)}
+                    </td>
+
+                    <td class="${stockClass}">
+                        ${Number(product.stock)}
+                    </td>
+
+                    <td>
+
+                        <div class="action-buttons">
+
+                            <button
+                                class="action-btn edit"
+                                onclick="editProduct('${product._id}')"
+                            >
+                                Edit
+                            </button>
+
+                            <button
+                                class="action-btn delete"
+                                onclick="deleteProduct('${product._id}')"
+                            >
+                                Delete
+                            </button>
+
+                        </div>
+
+                    </td>
+
+                </tr>
+            `;
+
+        }).join("");
+
+
+    const empty =
+        document.getElementById(
+            "productsEmpty"
+        );
+
+    if (empty) {
+        empty.hidden =
+            list.length > 0;
+    }
+
+    updateProductCount(
+        list.length
+    );
+}
+
+
+/* ==========================================
+   SAVE PRODUCT
+========================================== */
+
+async function saveProduct(event) {
+
+    event.preventDefault();
+
+    const product = {
+
+        name:
+            document.getElementById(
+                "productName"
+            ).value.trim(),
+
+        category:
+            document.getElementById(
+                "productCategory"
+            ).value,
+
+        price:
+            Number(
+                document.getElementById(
+                    "productPrice"
+                ).value
+            ),
+
+        stock:
+            Number(
+                document.getElementById(
+                    "productStock"
+                ).value
+            ),
+
+        image:
+            document.getElementById(
+                "productImage"
+            ).value.trim(),
+
+        description:
+            document.getElementById(
+                "productDescription"
+            ).value.trim()
+    };
+
+
+    clearMessages();
+
+
+    if (
+        !product.name ||
+        !product.category ||
+        !product.image ||
+        !product.description ||
+        product.price < 0 ||
+        product.stock < 0 ||
+        Number.isNaN(product.price) ||
+        Number.isNaN(product.stock)
+    ) {
+
+        showError(
+            "Please fill all fields correctly."
+        );
+
+        return;
+    }
+
+
+    const editing =
+        Boolean(editingProductId);
+
+
+    try {
+
+        const response =
+            await fetch(
+                editing
+                    ? `${API_URL}/${editingProductId}`
+                    : API_URL,
+                {
+                    method:
+                        editing
+                            ? "PUT"
+                            : "POST",
+
+                    headers: {
+                        "Content-Type":
+                            "application/json"
+                    },
+
+                    body:
+                        JSON.stringify(product)
+                }
+            );
+
+
+        const data =
+            await response
+                .json()
+                .catch(() => ({}));
+
+
+        if (!response.ok) {
+
+            throw new Error(
+                data.message ||
+                "Request failed."
+            );
+        }
+
+
+        showSuccess(
+            editing
+                ? "Product updated successfully."
+                : "Product added successfully."
+        );
+
+
+        showToast(
+            editing
+                ? "Product updated."
+                : "Product added."
+        );
+
+
+        resetProductForm(false);
+
+        await loadProducts();
+
+        updateDashboard();
+
+        renderAnalytics();
+
+    } catch (error) {
+
+        console.error(error);
+
+        showError(
+            error.message ||
+            "Could not save product."
+        );
+    }
+}
+
+
+/* ==========================================
+   EDIT PRODUCT
+========================================== */
+
+function editProduct(id) {
+
+    const product =
+        products.find(
+            item => item._id === id
+        );
+
+    if (!product) return;
+
+
+    editingProductId = id;
+
+
+    document.getElementById(
+        "productName"
+    ).value =
+        product.name || "";
+
+
+    document.getElementById(
+        "productCategory"
+    ).value =
+        product.category || "";
+
+
+    document.getElementById(
+        "productPrice"
+    ).value =
+        product.price ?? "";
+
+
+    document.getElementById(
+        "productStock"
+    ).value =
+        product.stock ?? "";
+
+
+    document.getElementById(
+        "productImage"
+    ).value =
+        product.image || "";
+
+
+    document.getElementById(
+        "productDescription"
+    ).value =
+        product.description || "";
+
+
+    const addButton =
+        document.getElementById(
+            "addProductButton"
+        );
+
+    if (addButton) {
+        addButton.textContent =
+            "✓ Update Product";
+    }
+
+
+    const cancelButton =
+        document.getElementById(
+            "cancelEdit"
+        );
+
+    if (cancelButton) {
+        cancelButton.hidden = false;
+    }
+
+
+    previewImage();
+
+
+    document
+        .getElementById("add-product")
+        ?.scrollIntoView({
+            behavior: "smooth"
+        });
+
+
+    showToast(
+        "Editing " +
+        product.name
+    );
+}
+
+
+/* ==========================================
+   DELETE PRODUCT
+========================================== */
+
+async function deleteProduct(id) {
+
+    const product =
+        products.find(
+            item => item._id === id
+        );
+
+    if (!product) return;
+
+
+    const confirmed =
+        confirm(
+            `Delete "${product.name}"?`
+        );
+
+    if (!confirmed) return;
+
+
+    try {
+
+        const response =
+            await fetch(
+                `${API_URL}/${id}`,
+                {
+                    method: "DELETE"
+                }
+            );
+
+
+        if (!response.ok) {
+            throw new Error(
+                "Delete failed."
+            );
+        }
+
+
+        showToast(
+            "Product deleted."
+        );
+
+
+        await loadProducts();
+
+        updateDashboard();
+
+        renderAnalytics();
+
+    } catch (error) {
+
+        console.error(error);
+
+        showToast(
+            error.message ||
+            "Could not delete product."
+        );
+    }
+}
+
+
+/* ==========================================
+   RESET PRODUCT FORM
+========================================== */
+
+function resetProductForm(
+    clear = true
+) {
+
+    editingProductId = null;
+
+
+    const form =
+        document.getElementById(
+            "productForm"
+        );
+
+    if (form) {
+        form.reset();
+    }
+
+
+    const addButton =
+        document.getElementById(
+            "addProductButton"
+        );
+
+    if (addButton) {
+        addButton.textContent =
+            "＋ Add Product";
+    }
+
+
+    const cancelButton =
+        document.getElementById(
+            "cancelEdit"
+        );
+
+    if (cancelButton) {
+        cancelButton.hidden = true;
+    }
+
+
+    const preview =
+        document.getElementById(
+            "imagePreview"
+        );
+
+    if (preview) {
+        preview.innerHTML =
+            "IMAGE PREVIEW";
+    }
+
+
+    if (clear) {
+        clearMessages();
+    }
+}
+
+
+/* ==========================================
+   IMAGE PREVIEW
+========================================== */
+
+function previewImage() {
+
+    const input =
+        document.getElementById(
+            "productImage"
+        );
+
+    const preview =
+        document.getElementById(
+            "imagePreview"
+        );
+
+    if (!input || !preview) return;
+
+
+    const url =
+        input.value.trim();
+
+
+    preview.innerHTML =
+        url
+            ? `
+                <img
+                    src="${escapeHTML(url)}"
+                    alt="Preview"
+                    onerror="
+                        this.parentElement.innerHTML =
+                        'IMAGE COULD NOT LOAD'
+                    "
+                >
+            `
+            : "IMAGE PREVIEW";
+}
+
+
+/* ==========================================
+   RENDER ORDERS
+========================================== */
+
+function renderOrders() {
+
+    const grid =
+        document.getElementById(
+            "ordersGrid"
+        );
+
+    if (!grid) return;
+
+
+    const search =
+        (
+            document.getElementById(
+                "orderSearch"
+            )?.value || ""
+        )
+            .toLowerCase()
+            .trim();
+
+
+    const status =
+        document.getElementById(
+            "orderStatusFilter"
+        )?.value || "all";
+
+
+    const list =
+        orders.filter(order => {
+
+            const customerName =
+                String(
+                    order.customerName || ""
+                ).toLowerCase();
+
+            const email =
+                String(
+                    order.email || ""
+                ).toLowerCase();
+
+            const phone =
+                String(
+                    order.phone || ""
+                ).toLowerCase();
+
+            const orderId =
+                String(
+                    order._id || ""
+                ).toLowerCase();
+
+
+            const matchesSearch =
+                customerName.includes(search) ||
+                email.includes(search) ||
+                phone.includes(search) ||
+                orderId.includes(search);
+
+
+            const matchesStatus =
+                status === "all" ||
+                String(
+                    order.status || "Pending"
+                ).toLowerCase() ===
+                status.toLowerCase();
+
+
+            return (
+                matchesSearch &&
+                matchesStatus
+            );
+        });
+
+
+    grid.innerHTML =
+        list.map(order => {
+
+            const items =
+                Array.isArray(order.items)
+                    ? order.items
+                    : [];
+
+
+            const currentStatus =
+                order.status ||
+                "Pending";
+
+
+            return `
+                <article class="order-card">
+
+                    <div class="order-head">
+
+                        <div>
+
+                            <div class="order-id">
+                                ORDER #
+                                ${escapeHTML(
+                                    String(
+                                        order._id || ""
+                                    )
+                                        .slice(-8)
+                                        .toUpperCase()
+                                )}
+                            </div>
+
+                            <div class="order-customer">
+                                ${escapeHTML(
+                                    order.customerName ||
+                                    "Customer"
+                                )}
+                            </div>
+
+                            <div class="order-email">
+                                ${escapeHTML(
+                                    order.email || ""
+                                )}
+                            </div>
+
+                            ${
+                                order.phone
+                                    ? `
+                                        <div class="order-phone">
+                                            ${escapeHTML(
+                                                order.phone
+                                            )}
+                                        </div>
+                                    `
+                                    : ""
+                            }
+
+                        </div>
+
+
+                        <span
+                            class="
+                                badge
+                                status-${String(
+                                    currentStatus
+                                )
+                                    .toLowerCase()
+                                    .replace(
+                                        /\s+/g,
+                                        "-"
+                                    )}
+                            "
+                        >
+                            ${escapeHTML(
+                                currentStatus
+                            )}
+                        </span>
+
+                    </div>
+
+
+                    <!-- CUSTOMER DETAILS -->
+
+                    <div class="order-customer-details">
+
+                        <div class="detail-row">
+
+                            <span>
+                                Customer
+                            </span>
+
+                            <strong>
+                                ${escapeHTML(
+                                    order.customerName ||
+                                    "Not provided"
+                                )}
+                            </strong>
+
+                        </div>
+
+
+                        <div class="detail-row">
+
+                            <span>
+                                Email
+                            </span>
+
+                            <strong>
+                                ${escapeHTML(
+                                    order.email ||
+                                    "Not provided"
+                                )}
+                            </strong>
+
+                        </div>
+
+
+                        <div class="detail-row">
+
+                            <span>
+                                Phone
+                            </span>
+
+                            <strong>
+                                ${escapeHTML(
+                                    order.phone ||
+                                    "Not provided"
+                                )}
+                            </strong>
+
+                        </div>
+
+
+                        <div class="detail-row address-row">
+
+                            <span>
+                                Address
+                            </span>
+
+                            <strong>
+                                ${escapeHTML(
+                                    order.address ||
+                                    "Not provided"
+                                )}
+                            </strong>
+
+                        </div>
+
+                    </div>
+
+
+                    <!-- ORDER META -->
+
+                    <div class="order-meta">
+
+                        <span class="order-total">
+                            ${formatPrice(
+                                order.totalAmount
+                            )}
+                        </span>
+
+                        <span class="order-date">
+                            ${formatDate(
+                                order.createdAt
+                            )}
+                        </span>
+
+                    </div>
+
+
+                    <!-- ORDER ITEMS -->
+
+                    <div class="order-items-section">
+
+                        <h4>
+                            Ordered Products
+                        </h4>
+
+                        <div class="order-items">
+
+                            ${
+                                items.length
+                                    ? items
+                                        .map(
+                                            item => `
+                                                <div class="order-item">
+
+                                                    <div>
+                                                        <strong>
+                                                            ${escapeHTML(
+                                                                item.name ||
+                                                                "Product"
+                                                            )}
+                                                        </strong>
+
+                                                        <small>
+                                                            Quantity:
+                                                            ${Number(
+                                                                item.quantity ||
+                                                                0
+                                                            )}
+                                                        </small>
+                                                    </div>
+
+                                                    <span>
+                                                        ${formatPrice(
+                                                            Number(
+                                                                item.price ||
+                                                                0
+                                                            ) *
+                                                            Number(
+                                                                item.quantity ||
+                                                                0
+                                                            )
+                                                        )}
+                                                    </span>
+
+                                                </div>
+                                            `
+                                        )
+                                        .join("")
+                                    : `
+                                        <div class="empty-state">
+                                            No item details available.
+                                        </div>
+                                    `
+                            }
+
+                        </div>
+
+                    </div>
+
+
+                    <!-- STATUS -->
+
+                    <div class="order-card-footer">
+
+                        <div>
+
+                            <small>
+                                Update Status
+                            </small>
+
+                            <select
+                                class="status-select"
+                                onchange="
+                                    updateOrderStatus(
+                                        '${order._id}',
+                                        this.value
+                                    )
+                                "
+                            >
+                                ${getStatusOptions(
+                                    currentStatus
+                                )}
+                            </select>
+
+                        </div>
+
+                        <strong>
+                            ${formatPrice(
+                                order.totalAmount
+                            )}
+                        </strong>
+
+                    </div>
+
+                </article>
+            `;
+
+        }).join("");
+
+
+    const empty =
+        document.getElementById(
+            "ordersEmpty"
+        );
+
+    if (empty) {
+        empty.hidden =
+            list.length > 0;
+    }
+}
+
+
+/* ==========================================
+   UPDATE ORDER STATUS
+========================================== */
+
+async function updateOrderStatus(
+    id,
+    status
+) {
+
+    try {
+
+        const response =
+            await fetch(
+                `${ORDER_API_URL}/${id}/status`,
+                {
+                    method: "PUT",
+
+                    headers: {
+                        "Content-Type":
+                            "application/json"
+                    },
+
+                    body:
+                        JSON.stringify({
+                            status
+                        })
+                }
+            );
+
+
+        const data =
+            await response
+                .json()
+                .catch(() => ({}));
+
+
+        if (!response.ok) {
+
+            throw new Error(
+                data.message ||
+                "Status update failed."
+            );
+        }
+
+
+        const order =
+            orders.find(
+                item => item._id === id
+            );
+
+
+        if (order) {
+            order.status = status;
+        }
+
+
+        showToast(
+            "Order status updated."
+        );
+
+
+        renderOrders();
+
+        updateDashboard();
+
+        renderAnalytics();
+
+    } catch (error) {
+
+        console.error(error);
+
+        showToast(
+            error.message ||
+            "Could not update order."
+        );
+
+        await loadOrders();
+    }
+}
+
+
+/* ==========================================
+   DASHBOARD STATISTICS
+========================================== */
+
+function updateDashboard() {
+
+    const totalProducts =
+        document.getElementById(
+            "totalProducts"
+        );
+
+    const totalOrders =
+        document.getElementById(
+            "totalOrders"
+        );
+
+    const pendingOrders =
+        document.getElementById(
+            "pendingOrders"
+        );
+
+    const totalRevenue =
+        document.getElementById(
+            "totalRevenue"
+        );
+
+
+    if (totalProducts) {
+        totalProducts.textContent =
+            products.length;
+    }
+
+
+    if (totalOrders) {
+        totalOrders.textContent =
+            orders.length;
+    }
+
+
+    if (pendingOrders) {
+
+        pendingOrders.textContent =
+            orders.filter(
+                order =>
+                    String(
+                        order.status ||
+                        "Pending"
+                    ).toLowerCase() ===
+                    "pending"
+            ).length;
+    }
+
+
+    if (totalRevenue) {
+
+        const revenue =
+            orders.reduce(
+                (sum, order) => {
+
+                    if (
+                        String(
+                            order.status || ""
+                        ).toLowerCase() ===
+                        "cancelled"
+                    ) {
+                        return sum;
+                    }
+
+                    return (
+                        sum +
+                        Number(
+                            order.totalAmount ||
+                            0
+                        )
+                    );
+
+                },
+                0
+            );
+
+
+        totalRevenue.textContent =
+            formatPrice(revenue);
+    }
+}
+
+
+/* ==========================================
+   ANALYTICS
+========================================== */
+
+function renderAnalytics() {
+
+    renderRevenueChart();
+
+    renderStatusChart();
+
+    renderTopProducts();
+}
+
+
+/* ==========================================
+   LAST 7 DAYS
+========================================== */
+
+function getDays() {
+
+    const days = [];
+
+    const now =
+        new Date();
+
+
+    for (
+        let i = 6;
+        i >= 0;
+        i--
+    ) {
+
+        const date =
+            new Date(now);
+
+        date.setHours(
+            0,
+            0,
+            0,
+            0
+        );
+
+        date.setDate(
+            now.getDate() - i
+        );
+
+        days.push(date);
+    }
+
+
+    return days;
+}
+
+
+/* ==========================================
+   REVENUE CHART
+========================================== */
+
+function renderRevenueChart() {
+
+    const chart =
+        document.getElementById(
+            "revenueChart"
+        );
+
+    if (!chart) return;
+
+
+    const days =
+        getDays();
+
+
+    const values =
+        days.map(day => {
+
+            return orders.reduce(
+                (sum, order) => {
+
+                    if (
+                        !order.createdAt ||
+                        String(
+                            order.status || ""
+                        ).toLowerCase() ===
+                        "cancelled"
+                    ) {
+                        return sum;
+                    }
+
+
+                    const date =
+                        new Date(
+                            order.createdAt
+                        );
+
+
+                    return
+                        date.toDateString() ===
+                        day.toDateString()
+                            ? sum +
+                              Number(
+                                  order.totalAmount ||
+                                  0
+                              )
+                            : sum;
+
+                },
+                0
+            );
+        });
+
+
+    const max =
+        Math.max(
+            ...values,
+            1
+        );
+
+
+    const sevenDayRevenue =
+        document.getElementById(
+            "sevenDayRevenue"
+        );
+
+
+    if (sevenDayRevenue) {
+
+        sevenDayRevenue.textContent =
+            formatPrice(
+                values.reduce(
+                    (a, b) => a + b,
+                    0
+                )
+            );
+    }
+
+
+    chart.innerHTML =
+        values.map(
+            (value, index) => {
+
+                const height =
+                    value > 0
+                        ? Math.max(
+                            value / max * 100,
+                            8
+                        )
+                        : 2;
+
+
+                return `
+                    <div class="bar-item">
+
+                        <em>
+                            ${formatCompact(
+                                value
+                            )}
+                        </em>
+
+                        <div
+                            class="bar"
+                            style="
+                                height:${height}%
+                            "
+                        ></div>
+
+                        <small>
+                            ${days[
+                                index
+                            ].toLocaleDateString(
+                                "en-IN",
+                                {
+                                    weekday:
+                                        "short"
+                                }
+                            )}
+                        </small>
+
+                    </div>
+                `;
+
+            }
+        ).join("");
+}
+
+
+/* ==========================================
+   ORDER STATUS CHART
+========================================== */
+
+function renderStatusChart() {
+
+    const chart =
+        document.getElementById(
+            "statusChart"
+        );
+
+    if (!chart) return;
+
+
+    const statuses = [
+        "Pending",
+        "Processing",
+        "Shipped",
+        "Delivered",
+        "Cancelled"
+    ];
+
+
+    const counts =
+        statuses.map(
+            status =>
+                orders.filter(
+                    order =>
+                        String(
+                            order.status ||
+                            "Pending"
+                        ).toLowerCase() ===
+                        status.toLowerCase()
+                ).length
+        );
+
+
+    const max =
+        Math.max(
+            ...counts,
+            1
+        );
+
+
+    chart.innerHTML =
+        statuses.map(
+            (status, index) => {
+
+                return `
+                    <div class="status-row">
+
+                        <span>
+                            ${status}
+                        </span>
+
+                        <div class="status-track">
+
+                            <div
+                                class="status-fill"
+                                style="
+                                    width:${
+                                        counts[index] /
+                                        max *
+                                        100
+                                    }%
+                                "
+                            ></div>
+
+                        </div>
+
+                        <strong>
+                            ${counts[index]}
+                        </strong>
+
+                    </div>
+                `;
+
+            }
+        ).join("");
+}
+
+
+/* ==========================================
+   TOP PRODUCTS
+========================================== */
+
+function renderTopProducts() {
+
+    const container =
+        document.getElementById(
+            "topProducts"
+        );
+
+    if (!container) return;
+
+
+    const totals = {};
+
+
+    orders.forEach(order => {
+
+        if (
+            String(
+                order.status || ""
+            ).toLowerCase() ===
+            "cancelled"
+        ) {
+            return;
+        }
+
+
+        (
+            order.items || []
+        ).forEach(item => {
+
+            const name =
+                item.name ||
+                "Unknown Product";
+
+
+            totals[name] =
+                (
+                    totals[name] ||
+                    0
+                ) +
+                Number(
+                    item.quantity ||
+                    0
+                );
+        });
+    });
+
+
+    const top =
+        Object.entries(totals)
+            .sort(
+                (a, b) =>
+                    b[1] - a[1]
+            )
+            .slice(0, 5);
+
+
+    container.innerHTML =
+        top.length
+
+            ? top.map(
+                ([name, quantity], index) => {
+
+                    return `
+                        <div class="top-row">
+
+                            <span class="rank">
+                                ${String(
+                                    index + 1
+                                ).padStart(
+                                    2,
+                                    "0"
+                                )}
+                            </span>
+
+                            <span class="top-name">
+                                ${escapeHTML(
+                                    name
+                                )}
+                            </span>
+
+                            <span class="top-qty">
+                                ${quantity}
+                                sold
+                            </span>
+
+                        </div>
+                    `;
+                }
+            ).join("")
+
+            : `
+                <div class="empty-state">
+                    No sales data yet.
+                </div>
+            `;
+}
+
+
+/* ==========================================
+   PRODUCT COUNT
+========================================== */
+
+function updateProductCount(
+    count = products.length
+) {
+
+    const element =
+        document.getElementById(
+            "productCount"
+        );
+
+    if (!element) return;
+
+
+    element.textContent =
+        `${count} product${
+            count === 1
+                ? ""
+                : "s"
+        }`;
+}
+
+
+/* ==========================================
+   ORDER STATUS OPTIONS
+========================================== */
+
+function getStatusOptions(
+    currentStatus
+) {
+
+    const statuses = [
+        "Pending",
+        "Processing",
+        "Shipped",
+        "Delivered",
+        "Cancelled"
+    ];
+
+
+    return statuses.map(
+        status =>
+            `
+                <option
+                    value="${status}"
+                    ${
+                        status ===
+                        currentStatus
+                            ? "selected"
+                            : ""
+                    }
+                >
+                    ${status}
+                </option>
+            `
+    ).join("");
+}
+
+
+/* ==========================================
+   FORMATTING
+========================================== */
+
+function formatPrice(value) {
+
+    return new Intl.NumberFormat(
+        "en-IN",
+        {
+            style: "currency",
+            currency: "INR",
+            maximumFractionDigits: 2
+        }
+    ).format(
+        Number(value || 0)
+    );
+}
+
+
+function formatCompact(value) {
+
+    if (value >= 100000) {
+
+        return (
+            "₹" +
+            (
+                value / 100000
+            ).toFixed(1) +
+            "L"
+        );
+    }
+
+
+    if (value >= 1000) {
+
+        return (
+            "₹" +
+            (
+                value / 1000
+            ).toFixed(1) +
+            "K"
+        );
+    }
+
+
+    return (
+        "₹" +
+        Math.round(value)
+    );
+}
+
+
+function formatDate(value) {
+
+    if (!value) {
+        return "Unknown date";
+    }
+
+
+    const date =
+        new Date(value);
+
+
+    if (
+        Number.isNaN(
+            date.getTime()
+        )
+    ) {
+        return "Unknown date";
+    }
+
+
+    return date.toLocaleDateString(
+        "en-IN",
+        {
+            day: "2-digit",
+            month: "short",
+            year: "numeric"
+        }
+    );
+}
+
+
+/* ==========================================
+   SECURITY
+========================================== */
+
+function escapeHTML(value) {
+
+    return String(
+        value ?? ""
+    ).replace(
+        /[&<>"']/g,
+        character =>
+            ({
+                "&": "&amp;",
+                "<": "&lt;",
+                ">": "&gt;",
+                '"': "&quot;",
+                "'": "&#039;"
+            })[
+                character
+            ]
+    );
+}
+
+
+/* ==========================================
+   LOADING
+========================================== */
+
+function setLoading(
+    id,
+    loading
+) {
+
+    const element =
+        document.getElementById(id);
+
+    if (!element) return;
+
+
+    element.hidden =
+        !loading;
+}
+
+
+/* ==========================================
+   MESSAGES
+========================================== */
+
+function clearMessages() {
+
+    const success =
+        document.getElementById(
+            "successMessage"
+        );
+
+    const error =
+        document.getElementById(
+            "errorMessage"
+        );
+
+
+    if (success) {
+        success.textContent = "";
+    }
+
+
+    if (error) {
+        error.textContent = "";
+    }
+}
+
+
+function showSuccess(message) {
+
+    const element =
+        document.getElementById(
+            "successMessage"
+        );
+
+    if (element) {
+        element.textContent =
+            message;
+    }
+}
+
+
+function showError(message) {
+
+    const element =
+        document.getElementById(
+            "errorMessage"
+        );
+
+    if (element) {
+        element.textContent =
+            message;
+    }
+}
+
+
+/* ==========================================
+   TOAST
+========================================== */
+
+function showToast(message) {
+
+    const toast =
+        document.getElementById(
+            "adminToast"
+        );
+
+    const toastMessage =
+        document.getElementById(
+            "toastMessage"
+        );
+
+
+    if (!toast || !toastMessage) {
+        return;
+    }
+
+
+    toastMessage.textContent =
+        message;
+
+
+    toast.classList.add(
+        "show"
+    );
+
+
+    clearTimeout(
+        window.__toast
+    );
+
+
+    window.__toast =
+        setTimeout(
+            () => {
+
+                toast.classList.remove(
+                    "show"
+                );
+
+            },
+            2500
+        );
+}
+
+
+/* ==========================================
+   NAVIGATION
+========================================== */
+
+function setupNavigation() {
+
+    const links =
+        document.querySelectorAll(
+            ".side-link"
+        );
+
+
+    links.forEach(link => {
+
+        link.addEventListener(
+            "click",
+            () => {
+
+                links.forEach(
+                    item =>
+                        item.classList.remove(
+                            "active"
+                        )
+                );
+
+
+                link.classList.add(
+                    "active"
+                );
+            }
+        );
+    });
+}
+
+
+/* ==========================================
+   GLOBAL FUNCTIONS
+========================================== */
+
+window.editProduct =
+    editProduct;
+
+window.deleteProduct =
+    deleteProduct;
+
+window.updateOrderStatus =
+    updateOrderStatus;
